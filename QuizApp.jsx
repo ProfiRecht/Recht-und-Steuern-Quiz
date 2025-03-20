@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import firebase from "firebase/app";
-import "firebase/auth";
+import { Card, CardContent } from "./components/Card";
+import { Button } from "./components/Button";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
 
 const allowedEmails = [
   "mike.fell1997@outlook.de",
@@ -37,13 +37,35 @@ export default function QuizApp() {
   const [feedback, setFeedback] = useState("");
   const [score, setScore] = useState(0);
   const [timer, setTimer] = useState(15);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTimer((prev) => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
+    firebase.auth().onAuthStateChanged((user) => setUser(user));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => setTimer((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(interval);
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, user]);
+
+  const login = () => {
+    const email = prompt("E-Mail eingeben:");
+    const password = prompt("Passwort eingeben:");
+    if (!allowedEmails.includes(email)) {
+      alert("Diese E-Mail ist nicht berechtigt!");
+      return;
+    }
+    firebase.auth().signInWithEmailAndPassword(email, password).catch((error) => alert(error.message));
+  };
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
+        <Button onClick={login}>Einloggen</Button>
+      </div>
+    );
+  }
 
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
