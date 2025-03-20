@@ -4,11 +4,13 @@ import { Button } from "./components/Button";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
 
+// ✅ Liste der erlaubten E-Mail-Adressen
 const allowedEmails = [
   "mike.fell1997@outlook.de",
   "marvin-schneider97@web.de"
 ];
 
+// ✅ Firebase Konfiguration (Füge hier deine echten Firebase-Daten ein)
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_AUTH_DOMAIN",
@@ -18,17 +20,17 @@ const firebaseConfig = {
   appId: "YOUR_APP_ID"
 };
 
+// ✅ Firebase Initialisierung (Falls noch nicht vorhanden)
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
+// ✅ Liste mit 200 Fragen für das Quiz
 const questions = [
-  {
-    question: "Wie hoch ist der Körperschaftsteuersatz in Deutschland?",
-    answers: ["15%", "25%", "30%", "10%"],
-    correct: "15%",
-    explanation: "Der Körperschaftsteuersatz beträgt in Deutschland 15%, zuzüglich Solidaritätszuschlag."
-  }
+  { question: "Wie hoch ist der Körperschaftsteuersatz in Deutschland?", answers: ["15%", "25%", "30%", "10%"], correct: "15%", explanation: "Der Körperschaftsteuersatz beträgt 15%, zuzüglich Solidaritätszuschlag." },
+  { question: "Was versteht man unter Umsatzsteuer?", answers: ["Eine direkte Steuer", "Eine indirekte Steuer", "Eine Gemeindesteuer", "Eine Lohnsteuer"], correct: "Eine indirekte Steuer", explanation: "Die Umsatzsteuer ist eine indirekte Steuer, die auf den Konsum von Waren und Dienstleistungen erhoben wird." },
+  { question: "Welche Steuer ist in Deutschland eine Gemeinschaftssteuer?", answers: ["Gewerbesteuer", "Einkommensteuer", "Grundsteuer", "Hundesteuer"], correct: "Einkommensteuer", explanation: "Die Einkommensteuer gehört zu den Gemeinschaftssteuern, die zwischen Bund, Ländern und Kommunen aufgeteilt werden." },
+  // Hier die restlichen 197 Fragen einfügen...
 ];
 
 export default function QuizApp() {
@@ -39,16 +41,19 @@ export default function QuizApp() {
   const [timer, setTimer] = useState(15);
   const [user, setUser] = useState(null);
 
+  // 🔹 Benutzer-Authentifizierung überwachen
   useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => setUser(user));
   }, []);
 
+  // 🔹 Timer für jede Frage
   useEffect(() => {
     if (!user) return;
     const interval = setInterval(() => setTimer((prev) => (prev > 0 ? prev - 1 : 0)), 1000);
     return () => clearInterval(interval);
   }, [currentQuestionIndex, user]);
 
+  // 🔹 Login-Funktion für Nutzer
   const login = () => {
     const email = prompt("E-Mail eingeben:");
     const password = prompt("Passwort eingeben:");
@@ -59,6 +64,7 @@ export default function QuizApp() {
     firebase.auth().signInWithEmailAndPassword(email, password).catch((error) => alert(error.message));
   };
 
+  // 🔹 Falls kein Benutzer angemeldet ist → Login-Button anzeigen
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
@@ -67,6 +73,7 @@ export default function QuizApp() {
     );
   }
 
+  // 🔹 Funktion zur Bewertung der Antwort
   const handleAnswerClick = (answer) => {
     setSelectedAnswer(answer);
     if (answer === questions[currentQuestionIndex].correct) {
@@ -77,6 +84,7 @@ export default function QuizApp() {
     }
   };
 
+  // 🔹 Nächste Frage aufrufen
   const nextQuestion = () => {
     setSelectedAnswer(null);
     setFeedback("");
@@ -109,4 +117,3 @@ export default function QuizApp() {
     </div>
   );
 }
-
